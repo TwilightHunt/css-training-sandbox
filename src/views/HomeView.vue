@@ -1,7 +1,9 @@
-<script setup></script>
-
 <template>
-  <main>
-    <TheWelcome />
+  <main class="main">
+    <CardSlider />
   </main>
 </template>
+
+<script setup>
+import CardSlider from "../components/CardSlider.vue";
+</script>
