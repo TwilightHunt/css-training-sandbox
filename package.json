@@ -1,7 +1,7 @@
 {
   "name": "css-training-sandbox",
   "private": true,
-  "homepage": "https://twilighthunt.github.io/",
+  "homepage": "https://twilighthunt.github.io/css-training-sandbox/",
   "version": "0.1.0",
   "scripts": {
     "dev": "vite --port 7700",
