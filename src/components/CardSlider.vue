@@ -1,6 +1,9 @@
 <template>
   <div class="card-slider m-10">
-    <div v-if="currentOffset > 0" class="card-slider__chevron-left py-6 px-2" @click="slideTo(-1)">
+    <div
+      v-if="currentOffset > 0 || props.looped"
+      class="card-slider__chevron-left py-6 px-2"
+      @click="slideTo(-1)">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -12,10 +15,10 @@
       </svg>
     </div>
     <div ref="slider" class="card-slider__body">
-      <Card v-for="card in cards" :key="card.id" :data="card" />
+      <Card class="card" v-for="card in cards" :key="card.id" :data="card" />
     </div>
     <div
-      v-if="currentOffset < maxOffset"
+      v-if="currentOffset < maxOffset || props.looped"
       class="card-slider__chevron-right py-6 px-2"
       @click="slideTo(1)">
       <svg
@@ -44,18 +47,30 @@ const cardAmount: number = 6;
 const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, min), max);
 const maxOffset = ref();
 
+const props = defineProps({
+  looped: Boolean,
+});
+
 onMounted(async () => {
   cards.value = await fetchItems();
   // --> Show white space
-  maxOffset.value = Math.round(cards.value.length / cardAmount) * 100;
+  maxOffset.value = Math.floor(cards.value.length / cardAmount) * 100;
+
   // --> Fit items
   //maxOffset.value = (cards.value.length / cardAmount) * 100 - 100;
 });
 
 const slideTo = (delta: number) => {
-  const offset = currentOffset.value + 100 * delta;
-  currentOffset.value = clamp(offset, 0, maxOffset.value);
-  slider.value.style.transform = `translateX(-${currentOffset.value}%)`;
+  if (props.looped) {
+    for (let index = 0; index < cardAmount; index++) {
+      if (delta > 0) cards.value.push(cards.value.shift());
+      else cards.value.unshift(cards.value.pop());
+    }
+  } else {
+    const offset = currentOffset.value + 100 * delta;
+    currentOffset.value = clamp(offset, 0, maxOffset.value);
+    slider.value.style.transform = `translateX(-${currentOffset.value}%)`;
+  }
 };
 </script>
 
