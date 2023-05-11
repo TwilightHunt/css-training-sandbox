@@ -1,6 +1,6 @@
 <template>
   <div class="card-slider m-10">
-    <div v-if="currentOffset < 0" class="card-slider__chevron-left py-6 px-2" @click="slideTo(1)">
+    <div v-if="currentOffset > 0" class="card-slider__chevron-left py-6 px-2" @click="slideTo(-1)">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -15,9 +15,9 @@
       <Card v-for="card in cards" :key="card.id" :data="card" />
     </div>
     <div
-      v-if="currentOffset > -300"
+      v-if="currentOffset < maxOffset"
       class="card-slider__chevron-right py-6 px-2"
-      @click="slideTo(-1)">
+      @click="slideTo(1)">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -38,19 +38,24 @@ import { ref, onMounted } from "vue";
 
 const cards = ref();
 const slider = ref(null);
-let currentOffset: number = ref(0);
+let currentOffset = ref(0);
 const cardAmount: number = 6;
 
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, min), max);
+const maxOffset = ref();
 
 onMounted(async () => {
   cards.value = await fetchItems();
+  // --> Show white space
+  maxOffset.value = Math.round(cards.value.length / cardAmount) * 100;
+  // --> Fit items
+  //maxOffset.value = (cards.value.length / cardAmount) * 100 - 100;
 });
 
 const slideTo = (delta: number) => {
   const offset = currentOffset.value + 100 * delta;
-  currentOffset.value = clamp(offset, -300, 0);
-  slider.value.style.transform = `translate(${currentOffset.value}%, 0)`;
+  currentOffset.value = clamp(offset, 0, maxOffset.value);
+  slider.value.style.transform = `translateX(-${currentOffset.value}%)`;
 };
 </script>
 
