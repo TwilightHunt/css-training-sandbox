@@ -42,7 +42,26 @@ import { ref, onMounted } from "vue";
 const cards = ref();
 const slider = ref(null);
 let currentOffset = ref(0);
-const cardAmount: number = 6;
+const cardAmount = ref(6);
+
+const setWidth = () => {
+  if (window.innerWidth >= 1560) {
+    cardAmount.value = 6;
+  } else if (window.innerWidth >= 1315) {
+    cardAmount.value = 5;
+  } else if (window.innerWidth >= 1068) {
+    cardAmount.value = 4;
+  } else if (window.innerWidth >= 821) {
+    cardAmount.value = 3;
+  } else if (window.innerWidth >= 575) {
+    cardAmount.value = 2;
+  } else {
+    cardAmount.value = 1;
+  }
+  slider.value.style.gridAutoColumns = `minmax(${100 / cardAmount.value}%, auto)`;
+  maxOffset.value = Math.floor(cards.value.length / cardAmount.value) * 100;
+  if (cards.value.length % cardAmount.value === 0) maxOffset.value -= 100;
+};
 
 const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, min), max);
 const maxOffset = ref();
@@ -54,15 +73,16 @@ const props = defineProps({
 onMounted(async () => {
   cards.value = await fetchItems();
   // --> Show white space
-  maxOffset.value = Math.floor(cards.value.length / cardAmount) * 100;
+  maxOffset.value = Math.floor(cards.value.length / cardAmount.value) * 100;
 
   // --> Fit items
-  //maxOffset.value = (cards.value.length / cardAmount) * 100 - 100;
+  //maxOffset.value = (cards.value.length / cardAmount.value) * 100 - 100;
+  setWidth();
 });
 
 const slideTo = (delta: number) => {
   if (props.looped) {
-    for (let index = 0; index < cardAmount; index++) {
+    for (let index = 0; index < cardAmount.value; index++) {
       if (delta > 0) cards.value.push(cards.value.shift());
       else cards.value.unshift(cards.value.pop());
     }
@@ -72,6 +92,10 @@ const slideTo = (delta: number) => {
     slider.value.style.transform = `translateX(-${currentOffset.value}%)`;
   }
 };
+
+window.addEventListener("resize", function (event) {
+  setWidth();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -82,7 +106,7 @@ const slideTo = (delta: number) => {
 .card-slider__body {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(16.666%, auto);
+  grid-auto-columns: minmax(16.66%, auto);
   transition: transform 0.3s ease-in-out;
 }
 .card-slider__chevron-left {
