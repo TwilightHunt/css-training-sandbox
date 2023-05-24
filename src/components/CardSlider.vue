@@ -1,7 +1,7 @@
 <template>
   <div class="card-slider m-10" ref="target">
     <div
-      v-if="currentOffset > 0 || props.looped"
+      v-if="isMobile() === false && (currentOffset > 0 || props.looped)"
       class="card-slider__chevron-left py-6 px-2"
       @click="slideTo(-1)">
       <svg
@@ -18,7 +18,7 @@
       <Card class="card" v-for="card in cards" :key="card.id" :data="card" />
     </div>
     <div
-      v-if="currentOffset < maxOffset || props.looped"
+      v-if="isMobile() === false && (currentOffset < maxOffset || props.looped)"
       class="card-slider__chevron-right py-6 px-2"
       @click="slideTo(1)">
       <svg
@@ -39,6 +39,7 @@ import { fetchItems } from "../composables/useFetch.ts";
 import Card from "./Card.vue";
 import { ref, onMounted } from "vue";
 import { useSwipe } from "@vueuse/core";
+import { isMobile } from "../composables/useDevice.js";
 
 const cards = ref();
 const slider = ref(null);
@@ -94,11 +95,14 @@ const { direction, lengthX } = useSwipe(slider, {
     }
   },
   onSwipeEnd(e: TouchEvent) {
-    if (lengthX.value > 400) {
+    const maxLength = window.innerWidth / 2 - 30;
+    console.log(lengthX.value, maxLength);
+
+    if (lengthX.value > maxLength) {
       slideTo(1);
       slider.value.style.right = 0;
     }
-    if (lengthX.value < -400) {
+    if (lengthX.value < -maxLength) {
       slideTo(-1);
       slider.value.style.right = 0;
     }
