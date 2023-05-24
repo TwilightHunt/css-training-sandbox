@@ -1,5 +1,5 @@
 <template>
-  <div class="card-slider m-10">
+  <div class="card-slider m-10" ref="target">
     <div
       v-if="currentOffset > 0 || props.looped"
       class="card-slider__chevron-left py-6 px-2"
@@ -38,6 +38,7 @@
 import { fetchItems } from "../composables/useFetch.ts";
 import Card from "./Card.vue";
 import { ref, onMounted } from "vue";
+import { useSwipe } from "@vueuse/core";
 
 const cards = ref();
 const slider = ref(null);
@@ -80,6 +81,30 @@ onMounted(async () => {
   setWidth();
 });
 
+const target = ref<HTMLElement | null>(null);
+
+const { direction, lengthX } = useSwipe(slider, {
+  passive: false,
+  onSwipe(e: TouchEvent) {
+    if (direction.value === "left") {
+      slider.value.style.right = `${lengthX.value}px`;
+    }
+    if (direction.value === "right") {
+      slider.value.style.right = `${lengthX.value}px`;
+    }
+  },
+  onSwipeEnd(e: TouchEvent) {
+    if (lengthX.value > 400) {
+      slideTo(1);
+      slider.value.style.right = 0;
+    }
+    if (lengthX.value < -400) {
+      slideTo(-1);
+      slider.value.style.right = 0;
+    }
+  },
+});
+
 const slideTo = (delta: number) => {
   if (props.looped) {
     for (let index = 0; index < cardAmount.value; index++) {
@@ -104,6 +129,7 @@ window.addEventListener("resize", function (event) {
   position: relative;
 }
 .card-slider__body {
+  position: relative;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(16.66%, auto);
